@@ -6,7 +6,9 @@ jobs:
     install:
       runs-on: self-hosted
       steps:
+        
         - name: git checkout
           uses: actions/checkout@v4
+        
         - name: run playbook
           run: ansible-playbook install-playbook.yml

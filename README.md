@@ -126,7 +126,14 @@ It's time to commit changes and push to gitHub....but first...now is the time to
 
 Now, push to your repository and your job should run. If it doesn't start, reconfirm the path where you have your .github/workflows/cicd.yml file
 
-Once your playbook has run successfully, you should be able to view your installation on your servers. Feel free to go back to your playbook, update text and push to github. The update should appear on the webserver once the job is complete.
+Once your playbook has run successfully, you should be able to view your installation on your servers. 
+
+Let's go ahead to update our website using our workflow.
+
+Create a file - update_file.txt
+
+
+Feel free to go back to your playbook, update text and push to github. The update should appear on the webserver once the job is complete.
 
 ![server](images/ubuntu_server.png)
 

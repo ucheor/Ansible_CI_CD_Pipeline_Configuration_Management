@@ -33,11 +33,5 @@
     - name: Create index.html with custom text
       copy:
         dest: /var/www/html/index.html
-        content: |
-          <html>
-          <body>
-            <h1>Installed using Ansible - updated</h1>
-            <p>Deployed via CI/CD pipeline - GitHub Actions</p>
-          </body>
-          </html>
+        src: update_file.txt
         mode: '0644'
