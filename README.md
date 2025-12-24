@@ -2,11 +2,13 @@
 
 To improve the reliability, visibility, and traceability of our infrastructure management process, we are implementing a CI/CD pipeline for running our Ansible playbooks. Currently, playbooks are executed manually, which makes it difficult to track execution history, review logs, or ensure consistency across environments. By integrating Ansible with GitHub Actions, this proof of concept (PoC) demonstrates an automated workflow that executes playbooks on code changes, captures detailed run logs, and provides centralized visibility into deployment activity.
 
-Note: This is based off of May2025(17.4) project - setting up ansible servers and nodes - so might make more sense if you already have that set up.
+Note: This is based off of May2025(17.4) project - setting up ansible servers and nodes.
 
 **Steps:**
 
-Created a new folder - ansible-github - and moved terraform files so I can deploy and set up inventory infrastructure and configure ansible files automatically. Will be working from this new folder. Refer to May2025(17.4)
+If you have May2025(17.4) - Created a new folder - ansible-github - and moved terraform files so I can deploy and set up inventory infrastructure and configure ansible files automatically. Will be working from this new folder. Refer to May2025(17.4)
+
+*In case you don't have access to May2025 and still want to get this set up - Ansible environment set-up - https://github.com/ucheor/QRS-ansible-github.git. Move into QRS-ansible-github and go straight to Terraform init step.*
 
 ![setting_up_directory](images/setting_up_dir.png)
 
