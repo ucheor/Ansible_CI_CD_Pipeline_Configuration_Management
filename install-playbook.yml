@@ -30,7 +30,7 @@
         enabled: yes
       when: ansible_os_family == "RedHat"
 
-    - name: Create index.html with custom text
+    - name: Update index.html with custom text
       copy:
         dest: /var/www/html/index.html
         src: update_file.txt

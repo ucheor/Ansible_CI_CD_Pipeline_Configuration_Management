@@ -84,7 +84,7 @@ While in ansible-dev folder, create a gitHub repository and push ansible-dev fol
 
 Now, let's create a self-hosted runner for our GitHub repository using our Ansible control server. On your new gitHub repository, go to Settings, then Actions, then Runners. Follow the steps to configure a new runner. Remember that the self-hosted runner is your control Ansible server so this is the server you need to configure.
 
-You will need to log into your ansible server to do this
+You will need to log into your ansible server to do this. You will need your private keypair to log in. Alternatively, using your AWS connect terminal, connect to your Ansible control server.
 
 ![log_into_ansible_server](images/log_into_ansible_server_2.png)
 
@@ -128,20 +128,163 @@ Now, push to your repository and your job should run. If it doesn't start, recon
 
 Once your playbook has run successfully, you should be able to view your installation on your servers. 
 
+
+![server](images/ubuntu_server.png)
+
 Let's go ahead to update our website using our workflow.
 
 Create a file - update_file.txt
 
+![create_update_file](images/create_update_file.png)
 
-Feel free to go back to your playbook, update text and push to github. The update should appear on the webserver once the job is complete.
+Add this script to your new update_file.txt
 
-![server](images/ubuntu_server.png)
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Celebration!</title>
+</head>
+<body>
+  <div class="celebrate-container">
+    <div class="celebrate-box">
+      <svg class="celebrate-icon" width="64" height="64" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="#ffd6e8" stroke-width="2"/>
+        <path d="M7 12l3 3 7-7" stroke="#b5e48c" stroke-width="2" fill="none"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h1 class="celebrate-text">You did it!!! Way to go 😉 🎉</h1>
+      <div class="confetti pastel-a"></div>
+      <div class="confetti pastel-b"></div>
+      <div class="confetti pastel-c"></div>
+    </div>
+  </div>
 
-![update_playbook](images/update_text.png)
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0e0e0e;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .celebrate-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+    .celebrate-box {
+      position: relative;
+      padding: 24px 28px;
+      border-radius: 18px;
+      border: 3px solid #ffd6e8;
+      background: #1a1a1a;
+      animation: pop-in 0.8s ease-out;
+    }
+    .celebrate-icon {
+      animation: bounce 1.6s infinite ease-in-out, rotate-icon 3s infinite ease-in-out;
+    }
+    .celebrate-text {
+      margin-top: 14px;
+      font-size: 1.8rem;
+      color: #c8fff0;
+      font-weight: 800;
+      animation: zoom-pulse 2s infinite ease-in-out;
+    }
+    /* Pastel confetti */
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      animation: float 2.2s infinite ease-in-out;
+    }
+    .pastel-a { background:#ffc8dd; left:-18px; top:10px; animation-delay:.3s; }
+    .pastel-b { background:#bde0fe; right:-18px; top:26px; animation-delay:.6s; }
+    .pastel-c { background:#caffbf; left:50%; bottom:-18px; animation-delay:.9s; }
+    
+    @keyframes bounce {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    @keyframes rotate-icon {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      25% { transform: rotate(-10deg) scale(1.1); }
+      75% { transform: rotate(10deg) scale(1.1); }
+    }
+    @keyframes zoom-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    @keyframes pop-in {
+      from { transform: scale(.8); opacity:0; }
+      to { transform: scale(1); opacity:1; }
+    }
+    @keyframes float {
+      0% { transform: translateY(0) rotate(0); opacity:1; }
+      100% { transform: translateY(-18px) rotate(45deg); opacity:.2; }
+    }
+  </style>
+</body>
+</html>
+```
 
-![update_workflow](images/updated_text_workflow.png)
+![update_file](images/update_file.png)
 
-![server_updated](images/server_updated.png)
+Update your playbook task - install-playbook.yml 
+```
+---
+- name: install package
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Install Apache on Ubuntu/Debian
+      package:
+        name: apache2
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Install Apache on CentOS/RHEL
+      package:
+        name: httpd
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Start and enable Apache on Ubuntu/Debian
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Start and enable Apache on CentOS/RHEL
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: Update index.html with custom text
+      copy:
+        dest: /var/www/html/index.html
+        src: update_file.txt
+        mode: '0644'
+
+```
+
+![update_playbook](images/update_playbook.png)
+
+Push your updates to GitHub repository and a new workflow should start running.
+
+![git_push](images/git_push_update.png)
+
+Go back to your servers and view changes!!!
+
+![updated_server](images/you_did_it.png)
 
 Let me know on discord if you run into any issues with this so I can review and update. I am also happy to get input and happy to help troubleshoot if needed.
 
