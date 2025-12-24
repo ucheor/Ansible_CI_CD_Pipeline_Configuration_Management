@@ -65,7 +65,7 @@ Add this text to the created playbook file
         content: |
           <html>
           <body>
-            <h1>Installed using Ansible - updated</h1>
+            <h1>Installed using Ansible</h1>
             <p>Deployed via CI/CD pipeline - GitHub Actions</p>
           </body>
           </html>
