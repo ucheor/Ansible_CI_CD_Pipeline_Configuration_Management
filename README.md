@@ -1,4 +1,4 @@
-Introduction
+**Introduction**
 
 To improve the reliability, visibility, and traceability of our infrastructure management process, we are implementing a CI/CD pipeline for running our Ansible playbooks. Currently, playbooks are executed manually, which makes it difficult to track execution history, review logs, or ensure consistency across environments. By integrating Ansible with GitHub Actions, this proof of concept (PoC) demonstrates an automated workflow that executes playbooks on code changes, captures detailed run logs, and provides centralized visibility into deployment activity.
 
@@ -6,7 +6,7 @@ Note: This is based off of May2025(17.4) project - setting up ansible servers an
 
 Will go back and polish my work but in case anyone needs to refernce the steps, here you go!
 
-Steps:
+**Steps:**
 
 Created a new folder - ansible-github - and moved terraform files so I can deploy and set up inventory infrastructure and configure ansible files automatically. Will be working from this new folder.
 
@@ -26,7 +26,7 @@ Move into ansible-dev (where we have our configuration and inventory files alrea
 
 ![create_playbook](images/create_playbook.png)
 
-Add this text to created the playbook file
+Add this text to the created playbook file
 
 ```
 ---
@@ -82,6 +82,8 @@ While in ansible-dev folder, create a gitHub repository and push ansible-dev fol
 
 ![create_gitHub_repo](images/git_commit.png)
 
+**Self-Hosted Runner Set-up**
+
 Now, let's create a self-hosted runner for our GitHub repository using our Ansible control server. On your new gitHub repository, go to Settings, then Actions, then Runners. Follow the steps to configure a new runner. Remember that the self-hosted runner is your control Ansible server so this is the server you need to configure.
 
 You will need to log into your ansible server to do this. You will need your private keypair to log in. Alternatively, using your AWS connect terminal, connect to your Ansible control server.
@@ -99,6 +101,8 @@ You will need to log into your ansible server to do this. You will need your pri
 Once you are done with the self-hosted runner setup, check the runner page on your gitHub repository to make sure your runner has been set up correctly.
 
 ![runner_ready](images/runner_ready.png)
+
+**GitHub Actions Workflow**
 
 Next is to set up github actions yml file. 
 
@@ -132,6 +136,8 @@ Once your playbook has run successfully, you should be able to view your install
 ![server](images/ubuntu_server.png)
 
 Let's go ahead to update our website using our workflow.
+
+**Testing CI/CD Pipeline with Updates**
 
 Create a file - update_file.txt
 
@@ -289,10 +295,4 @@ Go back to your servers and view changes!!!
 Let me know on discord if you run into any issues with this so I can review and update. I am also happy to get input and happy to help troubleshoot if needed.
 
 Let's get after it!!!
-
-
-
-
-
-
 
