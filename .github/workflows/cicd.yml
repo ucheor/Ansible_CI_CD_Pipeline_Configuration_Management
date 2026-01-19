@@ -4,7 +4,7 @@ on:
       branches: [ main ]
 jobs:
     install:
-      runs-on: self-hosted
+      runs-on: ubuntu-latest #switch to "self-hosted" if applicable
       steps:
         
         - name: git checkout
@@ -12,4 +12,5 @@ jobs:
         
         - name: run playbook
           working-directory: ./ansible-dev
-          run: ansible-playbook install-playbook.yml
+          run: ansible-playbook install-playbook.yml 
+      

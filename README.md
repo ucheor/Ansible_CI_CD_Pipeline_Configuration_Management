@@ -4,29 +4,40 @@ To improve the reliability, visibility, and traceability of our infrastructure m
 
 **Steps:**
 
-**GitHub Repository - https://github.com/ucheor/Ansible_CI_CD_Pipeline_Configuration_Management.git**
+**GitHub Repository - https://github.com/ucheor/Ansible_CI_CD**
 
-Set up your work directory abd clone the GitHub repository. 
+Set up your work directory and clone the GitHub repository. 
 
-![setting_up_directory](images/setting_up_dir.png)
+![setting_up_directory](images/git_checkout.png)
 
-We will be setting up the Ansible infrastructure and configuring the inventory files using Terraform. Kindly note that this is a test environment. Adjust your backend.tf file by updating your bucket name. This is a demo project. Kindly note the importance of imcorporating security measures in handling paswords and private key pairs. Adjust as appropriate.
+We will be setting up the Ansible infrastructure and configuring the inventory files using Terraform. Kindly note that this is a test environment. Adjust your backend.tf file by updating your bucket name. This is a demo project. Free free to update, improve or extend for your use. Kindly note the importance of incorporating security measures in handling paswords and private key pairs. Adjust as appropriate.
+
+![update_S3_bucket](images/your_bucket_name.png)
 
 ```
 terraform init
+```
+![terraform_init](images/terraform_init.png)
+```
+terraform plan
+```
+I would suggest reviewing the plan output to get an idea of the cloud infrastructure/services you are about to provision. For this project, we will be using one control node and 2 managed nodes. Also note that this terraform code will configure our ansible cfg and inventory files at the same time. Review and adjust as needed.
+
+```
 terraform apply
 ```
 'yes' to approve
 
 ![terraform_output](images/terraform_output.png)
 
-Save this output because, you might need it later. 
+Save this output because, you might need it later to help you access your applications. 
 
-Move into ansible-dev (where we have our configuration and inventory files already set up) and create a playbook - install-playbook.yml
+**Ansible Playbook**
 
-![create_playbook](images/create_playbook.png)
+We already have a GitHub Action playbook configured. This playbook will update packages and install Apache into both managed servers and start the Apache service, pulling the inventory/hosts information from the dev-inv.ini file. It will also deploy information from our source code (from update_file.txt) to the index file on our servers so we can view our application.
 
-Add this text to the created playbook file
+![view_playbook](images/view_playbook.png)
+
 
 ```
 ---
@@ -39,225 +50,14 @@ Add this text to the created playbook file
       package:
         name: apache2
         state: present
+        update_cache: yes
       when: ansible_os_family == "Debian"
 
     - name: Install Apache on CentOS/RHEL
       package:
         name: httpd
         state: present
-      when: ansible_os_family == "RedHat"
-
-    - name: Start and enable Apache on Ubuntu/Debian
-      service:
-        name: apache2
-        state: started
-        enabled: yes
-      when: ansible_os_family == "Debian"
-
-    - name: Start and enable Apache on CentOS/RHEL
-      service:
-        name: httpd
-        state: started
-        enabled: yes
-      when: ansible_os_family == "RedHat"
-
-    - name: Create index.html with custom text
-      copy:
-        dest: /var/www/html/index.html
-        content: |
-          <html>
-          <body>
-            <h1>Installed using Ansible</h1>
-            <p>Deployed via CI/CD pipeline - GitHub Actions</p>
-          </body>
-          </html>
-        mode: '0644'
-
-```
-![install_playbook_file](images/install_playbook_content.png)
-
-While in ansible-dev folder, create a gitHub repository and push ansible-dev folder to it
-
-![create_git_repo](images/git_repo.png)
-
-![create_gitHub_repo](images/git_commit.png)
-
-**Self-Hosted Runner Set-up**
-
-Now, let's create a self-hosted runner for our GitHub repository using our Ansible control server. On your new gitHub repository, go to Settings, then Actions, then Runners. Follow the steps to configure a new runner. Remember that the self-hosted runner is your control Ansible server so this is the server you need to configure.
-
-You will need to log into your ansible server to do this. You will need your private keypair to log in. Alternatively, using your AWS connect terminal, connect to your Ansible control server.
-
-![log_into_ansible_server](images/log_into_ansible_server_2.png)
-
-![configure_runner](images/configure_runner.png)
-
-![new_self_hosted_runner](images/new_self_hosted_runner.png)
-
-![runner_set_up](images/download_and_configure_runner.png)
-
-![ansible_runner_setup](images/ansible_runner_setup.png)
-
-Once you are done with the self-hosted runner setup, check the runner page on your gitHub repository to make sure your runner has been set up correctly.
-
-![runner_ready](images/runner_ready.png)
-
-**GitHub Actions Workflow**
-
-Next is to set up github actions yml file. 
-
-![create_gitHub_action yml file](images/github_action_yml_file.png)
-
-```
-name: run install playbook
-on: 
-    push:
-      branches: [ main ]
-jobs:
-    install:
-      runs-on: self-hosted
-      steps:
-        - name: git checkout
-          uses: actions/checkout@v4
-        - name: run playbook
-          run: ansible-playbook install-playbook.yml
-```
-![create_gitHub_action yml file content](images/github_action_yml_file2.png)
-
-It's time to commit changes and push to gitHub....but first...now is the time to double-check your security group for your servers to make sure port 80 is open. Your ansible playbook is installing Apache2 and we need to be able to access it on Port 80.
-
-![edit_security_group](images/edit_security_group.png)
-
-Now, push to your repository and your job should run. If it doesn't start, reconfirm the path where you have your .github/workflows/cicd.yml file
-
-Once your playbook has run successfully, you should be able to view your installation on your servers. 
-
-
-![server](images/ubuntu_server.png)
-
-Let's go ahead to update our website using our workflow.
-
-**Testing CI/CD Pipeline with Updates**
-
-Create a file - update_file.txt
-
-![create_update_file](images/create_update_file.png)
-
-Add this script to your new update_file.txt
-
-```
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Celebration!</title>
-</head>
-<body>
-  <div class="celebrate-container">
-    <div class="celebrate-box">
-      <svg class="celebrate-icon" width="64" height="64" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="10" stroke="#ffd6e8" stroke-width="2"/>
-        <path d="M7 12l3 3 7-7" stroke="#b5e48c" stroke-width="2" fill="none"
-              stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <h1 class="celebrate-text">You did it!!! Way to go 😉 🎉</h1>
-      <div class="confetti pastel-a"></div>
-      <div class="confetti pastel-b"></div>
-      <div class="confetti pastel-c"></div>
-    </div>
-  </div>
-
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #0e0e0e;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-    .celebrate-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      text-align: center;
-    }
-    .celebrate-box {
-      position: relative;
-      padding: 24px 28px;
-      border-radius: 18px;
-      border: 3px solid #ffd6e8;
-      background: #1a1a1a;
-      animation: pop-in 0.8s ease-out;
-    }
-    .celebrate-icon {
-      animation: bounce 1.6s infinite ease-in-out, rotate-icon 3s infinite ease-in-out;
-    }
-    .celebrate-text {
-      margin-top: 14px;
-      font-size: 1.8rem;
-      color: #c8fff0;
-      font-weight: 800;
-      animation: zoom-pulse 2s infinite ease-in-out;
-    }
-    /* Pastel confetti */
-    .confetti {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      animation: float 2.2s infinite ease-in-out;
-    }
-    .pastel-a { background:#ffc8dd; left:-18px; top:10px; animation-delay:.3s; }
-    .pastel-b { background:#bde0fe; right:-18px; top:26px; animation-delay:.6s; }
-    .pastel-c { background:#caffbf; left:50%; bottom:-18px; animation-delay:.9s; }
-    
-    @keyframes bounce {
-      0%,100% { transform: translateY(0); }
-      50% { transform: translateY(-6px); }
-    }
-    @keyframes rotate-icon {
-      0%, 100% { transform: rotate(0deg) scale(1); }
-      25% { transform: rotate(-10deg) scale(1.1); }
-      75% { transform: rotate(10deg) scale(1.1); }
-    }
-    @keyframes zoom-pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.08); }
-    }
-    @keyframes pop-in {
-      from { transform: scale(.8); opacity:0; }
-      to { transform: scale(1); opacity:1; }
-    }
-    @keyframes float {
-      0% { transform: translateY(0) rotate(0); opacity:1; }
-      100% { transform: translateY(-18px) rotate(45deg); opacity:.2; }
-    }
-  </style>
-</body>
-</html>
-```
-
-![update_file](images/update_file.png)
-
-Update your playbook task - install-playbook.yml 
-```
----
-- name: install package
-  hosts: all
-  become: true
-
-  tasks:
-    - name: Install Apache on Ubuntu/Debian
-      package:
-        name: apache2
-        state: present
-      when: ansible_os_family == "Debian"
-
-    - name: Install Apache on CentOS/RHEL
-      package:
-        name: httpd
-        state: present
+        update_cache: yes
       when: ansible_os_family == "RedHat"
 
     - name: Start and enable Apache on Ubuntu/Debian
@@ -281,18 +81,81 @@ Update your playbook task - install-playbook.yml
         mode: '0644'
 
 ```
+**Set up GitHub Repository**
+To run a GitHub Action workflow, we need a GitHub repository. If you haven't already, go ahead and create your GiHub repository for this project, set up your remote origin.
+```
+git remote remove origin
+git remote -v
+```
+Should return no output. Update the command below to add your repository link
+```
+git remote add origin <https://github.com/you/**your_repo**.git>
+```
 
-![update_playbook](images/update_playbook.png)
+**Self-Hosted Runner Set-up (optional)**
 
-Push your updates to GitHub repository and a new workflow should start running.
+We are done with setting up the playbook, now, let's create a self-hosted runner for our GitHub repository using our Ansible control server. This is optional and for situations where you prefer to use a self-hosted runner. In our default workflow, we will be using a GitHub runner. If you want to skip this stage and use a GitHub runner, go ahead to GitHub Actions Workflow step.
 
-![git_push](images/git_push_update.png)
+To set up a self-hosted runner, on your new gitHub repository, go to Settings, then Actions, then Runners. Follow the steps to configure a new runner. In this case, we are using our Ansible control node server as out GtHub runner. Feel free to use any other server your prefer.
 
-Go back to your servers and view changes!!!
+You will need to be logged into your designated self-hosted runner server to do this configuration.
 
-![updated_server](images/you_did_it.png)
+![configure_runner](images/configure_runner.png)
 
-Let me know on discord if you run into any issues with this so I can review and update. I am also happy to get input and happy to help troubleshoot if needed.
+![new_self_hosted_runner](images/new_self_hosted_runner.png)
+
+![runner_set_up](images/download_and_configure_runner.png)
+
+![ansible_runner_setup](images/ansible_runner_setup.png)
+
+Once you are done with the self-hosted runner setup, check the runner page on your gitHub repository to make sure your runner has been set up correctly. Make sure you to finish the last part, configure and run.
+
+*Important: to use your self-hosted runner, update the .github/workflows/cicd.yml file (next step) to run on "self-hosted" or any other label you assigned during runner set up.*
+
+![runner_ready](images/runner_ready.png)
+
+
+**GitHub Actions Workflow**
+
+Let's review the GitHub Actions file - .github/workflows/cicd.yml and update to your self-hosted runner if applicable (optional).
+
+![gitHub_action_workflow_file](images/github_action_yml_file.png)
+
+```
+name: run install playbook
+on: 
+    push:
+      branches: [ main ]
+jobs:
+    install:
+      runs-on: ubuntu-latest #switch to "self-hosted" if applicable
+      steps:
+        
+        - name: git checkout
+          uses: actions/checkout@v4
+        
+        - name: run playbook
+          working-directory: ./ansible-dev
+          run: ansible-playbook install-playbook.yml 
+```
+
+This ansible playbook is going to run the ansible install-playbook we reviewed earlier and get our application launched on the server (port 80 was exposed during terraform deployment). 
+
+**Review update_file.txt**
+This file contains the source code we will be deploying to our Apache servers. 
+
+**Git Push to Trigger GitHub Action Workflow**
+
+Push to your repository and which should trigger the workflow.
+Once your playbook has run successfully, you should be able to view the application on your servers using the public IP addresses. 
+
+![congratulations](images/you_did_it.png)
+
+**Testing CI/CD Pipeline with Updates**
+
+Feel free to update the update_file.txt and view changes on the website by pushing your changes to your GitHub repository.
+
+*Let me know if you run into any issues with this so I can review and update. I am also happy to get input and, happy to help troubleshoot if needed.*
 
 Let's get after it!!!
 
