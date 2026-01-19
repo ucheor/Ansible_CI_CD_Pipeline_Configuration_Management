@@ -116,6 +116,10 @@ Once you are done with the self-hosted runner setup, check the runner page on yo
 
 ![runner_ready](images/runner_ready.png)
 
+*Alternatively, to keep it running (instead of ./run.sh)*
+sudo ./svc.sh install
+sudo ./svc.sh start
+sudo ./svc.sh status
 
 **GitHub Actions Workflow**
 
@@ -150,6 +154,13 @@ This file contains the source code we will be deploying to our Apache servers.
 **Git Push to Trigger GitHub Action Workflow**
 
 Push to your repository and which should trigger the workflow.
+
+![push_to_trigger_workflow](images/git_push.png)
+
+Head to your GitHub repository and check the Actions tab.
+
+![action_successful](images/action_successful.png)
+
 Once your playbook has run successfully, you should be able to view the application on your servers using the public IP addresses. 
 
 ![congratulations](images/you_did_it.png)
